@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>壁内法寸法ツール 設定</title>
+<style>
+  :root{--bd:#d9d7cf;--mut:#6b6a64;--acc:#0f6e56;--accbg:#e1f5ee}
+  *{box-sizing:border-box}
+  body{font-family:"Segoe UI","Hiragino Sans","Yu Gothic UI",sans-serif;color:#222;margin:0;padding:20px;line-height:1.7;background:#faf9f5}
+  .wrap{max-width:820px;margin:0 auto}
+  h1{font-size:20px;font-weight:600;margin:0 0 4px}
+  .sub{color:var(--mut);font-size:13px;margin:0 0 20px}
+  .grid{display:grid;grid-template-columns:1fr;gap:16px}
+  @media(min-width:620px){.grid{grid-template-columns:300px 1fr}}
+  .card{background:#fff;border:1px solid var(--bd);border-radius:12px;padding:16px 18px}
+  .card h2{font-size:13px;font-weight:600;color:var(--mut);margin:0 0 10px;text-transform:none}
+  label{display:block;font-size:13px;color:var(--mut);margin:12px 0 4px}
+  input[type=number],select{width:100%;padding:7px 9px;border:1px solid var(--bd);border-radius:7px;font-size:14px;background:#fff}
+  .row{display:flex;gap:8px}.row>*{flex:1}
+  svg{width:100%;height:auto}
+  .cap{font-size:12px;color:var(--mut);margin:0 0 8px}
+  textarea{width:100%;height:120px;font-family:Consolas,monospace;font-size:12px;border:1px solid var(--bd);border-radius:8px;padding:10px;background:#fbfbf8;resize:vertical}
+  .btns{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+  button{padding:8px 16px;border:1px solid var(--acc);background:var(--acc);color:#fff;border-radius:7px;font-size:13px;cursor:pointer}
+  button.sec{background:#fff;color:var(--acc)}
+  .note{font-size:12px;color:var(--mut);margin-top:10px;padding:10px 12px;background:#fff8ec;border:1px solid #f0e2c0;border-radius:8px}
+  code{background:#eee;padding:1px 5px;border-radius:4px;font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>壁‑壁 内法寸法ツール 設定</h1>
+  <p class="sub">パラメータを決めて <code>壁内法寸法.bat</code> を生成します。生成した bat と <code>wall_clearance.ps1</code> の2つを<b>同じフォルダ</b>に入れて使ってください。場所はどこでも構いませんが、迷ったら Jw_cad 本体（<code>jw_win.exe</code>）があるフォルダが確実です。</p>
+
+  <div class="grid">
+    <div>
+      <div class="card" style="margin-bottom:14px">
+        <h2>検出条件</h2>
+        <label>内法とみなす最小間隔 (mm)</label>
+        <input type="number" id="gap" value="500" min="50" step="10">
+        <label>平行判定の許容角度 (度)</label>
+        <input type="number" id="ang" value="1" min="0" step="0.5">
+      </div>
+      <div class="card">
+        <h2>寸法図形</h2>
+        <label>寸法値の丸め</label>
+        <select id="round"><option value="1">1mm 単位（整数）</option><option value="0.5">0.5mm 単位</option><option value="0.1">小数第1位</option></select>
+        <label>寸法線の位置ずらし (mm・壁方向／中央=0)</label>
+        <input type="number" id="off" value="0" step="10">
+        <label>寸法線の向き</label>
+        <select id="orient"><option value="para">寸法線と同じ角度</option><option value="hv">水平に整える</option></select>
+        <label>端部形状</label>
+        <select id="term"><option value="dot">点（Jw標準）</option><option value="arrow">塗り矢印（三角）</option><option value="line">線矢印（シンプル）</option><option value="slash">斜線（45°の止め）</option></select>
+        <label style="margin-top:12px"><input type="checkbox" id="comma" checked style="width:auto;margin-right:6px">寸法値を3桁カンマ区切りにする（2200 → 2,200）</label>
+        <label>寸法値の文字種</label>
+        <select id="font"><option value="3" selected>文字種3</option><option value="2">文字種2</option><option value="4">文字種4</option><option value="5">文字種5</option></select>
+        <label style="margin-top:12px"><input type="checkbox" id="cust" style="width:auto;margin-right:6px">任意サイズで指定（文字種を無視／<code>cn0</code>）</label>
+        <div id="custbox" style="display:none;margin-top:4px">
+          <div class="row">
+            <div><label style="margin-top:6px">幅 (mm)</label><input type="number" id="tw" value="2.5" min="0.5" step="0.5"></div>
+            <div><label style="margin-top:6px">高さ (mm)</label><input type="number" id="th" value="2.5" min="0.5" step="0.5"></div>
+          </div>
+          <div class="row">
+            <div><label style="margin-top:6px">間隔 (mm)</label><input type="number" id="tsp" value="0" step="0.5"></div>
+            <div><label style="margin-top:6px">色No (1〜9)</label><input type="number" id="tc" value="8" min="1" max="9" step="1"></div>
+          </div>
+        </div>
+        <label style="margin-top:14px"><input type="checkbox" id="fig" style="width:auto;margin-right:6px">単線＋文字として作図（寸法図形にしないフォールバック）</label>
+      </div>
+    </div>
+
+    <div>
+      <div class="card" style="margin-bottom:14px">
+        <p class="cap" id="cap">範囲選択 → 間隔500mm以上の隣接対面を内法として自動作図</p>
+        <svg id="pv" viewBox="0 0 560 300"></svg>
+      </div>
+      <div class="card">
+        <h2>生成された 壁内法寸法.bat</h2>
+        <textarea id="bat" readonly></textarea>
+        <div class="btns">
+          <button onclick="dl()">batをダウンロード</button>
+          <button class="sec" onclick="cp()">コピー</button>
+        </div>
+        <div class="note">ダウンロードされる bat は Shift‑JIS（Jw_cad 対応の文字コード）で書き出されるので、選択メッセージが文字化けすることはありません。そのまま Jw_cad で使えます。</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var HDR_SJIS=[82,69,77,32,149,199,147,224,150,64,144,161,150,64,32,118,52,13,10,82,69,77,32,35,106,119,119,13,10,82,69,77,32,35,104,49,13,10,82,69,77,32,35,104,99,147,224,150,64,130,240,140,118,145,170,130,183,130,233,149,199,150,202,144,252,130,240,148,205,136,205,145,73,145,240,129,105,50,150,123,61,130,187,130,204,130,220,130,220,140,118,145,170,32,47,32,149,161,144,148,61,141,197,143,172,138,212,138,117,130,197,142,169,147,174,146,138,143,111,129,106,13,10,82,69,77,32,35,101,13,10,64,101,99,104,111,32,111,102,102,13,10];
+var HDR_TEXT="REM 壁内法寸法 v4\r\nREM #jww\r\nREM #h1\r\nREM #hc内法を計測する壁面線を範囲選択（2本=そのまま計測 / 複数=最小間隔で自動抽出）\r\nREM #e\r\n@echo off\r\n";
+var $=function(id){return document.getElementById(id)};
+function gen(){
+  var g=$("gap").value,a=$("ang").value,o=$("off").value,r=$("round").value,
+      or=$("orient").value,t=$("term").value,f=$("font").value,fig=$("fig").checked,
+      cust=$("cust").checked,comma=$("comma").checked;
+  $("custbox").style.display=cust?"":"none";
+  var size=cust?(" -TextW "+$("tw").value+" -TextH "+$("th").value+" -TextSp "+$("tsp").value+" -TextColor "+$("tc").value):"";
+  var tail='powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0wall_clearance.ps1" -TempFile "jwc_temp.txt"'+
+" -MinGap "+g+" -AngleTol "+a+" -Offset "+o+" -RoundStep "+r+" -Orient "+or+" -Term "+t+" -Font "+f+size+(comma?" -Comma":"")+(fig?" -NoFigure":"")+"\r\n";
+  window.__tail=tail;
+  $("bat").value=HDR_TEXT+tail;
+  $("cap").textContent="範囲選択 → 間隔"+g+"mm以上の隣接対面を内法として自動作図";
+  draw();
+}
+function draw(){
+  var off=+$("off").value, term=$("term").value, r=$("round").value;
+  var iL=140,iR=420,top=60,bot=210, face="#0f6e56", wall="#9a988f";
+  var raw=2730.4, val=(r>=1)?Math.round(raw):raw.toFixed(1);
+  if($("comma").checked){ var pp=String(val).split("."); pp[0]=pp[0].replace(/\B(?=(\d{3})+(?!\d))/g,","); val=pp.join("."); }
+  var dy=bot+18+Math.max(-40,Math.min(60,off*0.1));
+  var ends;
+  if(term==="dot"){
+    ends='<circle cx="'+iL+'" cy="'+dy+'" r="3" fill="'+face+'"/><circle cx="'+iR+'" cy="'+dy+'" r="3" fill="'+face+'"/>';
+  }else if(term==="line"){
+    ends='<path d="M'+(iL+10)+' '+(dy-4)+' L'+iL+' '+dy+' L'+(iL+10)+' '+(dy+4)+'" fill="none" stroke="'+face+'" stroke-width="1.2"/>'+
+         '<path d="M'+(iR-10)+' '+(dy-4)+' L'+iR+' '+dy+' L'+(iR-10)+' '+(dy+4)+'" fill="none" stroke="'+face+'" stroke-width="1.2"/>';
+  }else if(term==="slash"){
+    ends='<line x1="'+(iL-5)+'" y1="'+(dy+5)+'" x2="'+(iL+5)+'" y2="'+(dy-5)+'" stroke="'+face+'" stroke-width="1.4"/>'+
+         '<line x1="'+(iR-5)+'" y1="'+(dy+5)+'" x2="'+(iR+5)+'" y2="'+(dy-5)+'" stroke="'+face+'" stroke-width="1.4"/>';
+  }else{
+    ends='<path d="M'+iL+' '+dy+' l10 -4 v8 z" fill="'+face+'"/><path d="M'+iR+' '+dy+' l-10 -4 v8 z" fill="'+face+'"/>';
+  }
+  $("pv").innerHTML=
+    '<rect x="'+iL+'" y="'+top+'" width="'+(iR-iL)+'" height="'+(bot-top)+'" fill="#0f6e56" opacity="0.05"/>'+
+    '<line x1="110" y1="'+top+'" x2="110" y2="'+bot+'" stroke="'+wall+'" stroke-width="1.5"/>'+
+    '<line x1="450" y1="'+top+'" x2="450" y2="'+bot+'" stroke="'+wall+'" stroke-width="1.5"/>'+
+    '<line x1="110" y1="'+top+'" x2="'+iL+'" y2="'+top+'" stroke="'+wall+'" stroke-width="1.5"/>'+
+    '<line x1="110" y1="'+bot+'" x2="'+iL+'" y2="'+bot+'" stroke="'+wall+'" stroke-width="1.5"/>'+
+    '<line x1="450" y1="'+top+'" x2="'+iR+'" y2="'+top+'" stroke="'+wall+'" stroke-width="1.5"/>'+
+    '<line x1="450" y1="'+bot+'" x2="'+iR+'" y2="'+bot+'" stroke="'+wall+'" stroke-width="1.5"/>'+
+    '<line x1="'+iL+'" y1="'+top+'" x2="'+iL+'" y2="'+bot+'" stroke="'+face+'" stroke-width="2.5"/>'+
+    '<line x1="'+iR+'" y1="'+top+'" x2="'+iR+'" y2="'+bot+'" stroke="'+face+'" stroke-width="2.5"/>'+
+    '<line x1="'+iL+'" y1="'+bot+'" x2="'+iL+'" y2="'+(dy+6)+'" stroke="'+face+'" stroke-width="0.8" stroke-dasharray="3 2"/>'+
+    '<line x1="'+iR+'" y1="'+bot+'" x2="'+iR+'" y2="'+(dy+6)+'" stroke="'+face+'" stroke-width="0.8" stroke-dasharray="3 2"/>'+
+    '<line x1="'+iL+'" y1="'+dy+'" x2="'+iR+'" y2="'+dy+'" stroke="'+face+'" stroke-width="1.2"/>'+ends+
+    '<text x="'+((iL+iR)/2)+'" y="'+(dy-8)+'" text-anchor="middle" font-size="17" font-weight="600" fill="#222">'+val+'</text>'+
+    '<text x="'+((iL+iR)/2)+'" y="50" text-anchor="middle" font-size="12" fill="#6b6a64">内法（壁の内側面〜内側面）</text>';
+}
+function dl(){
+  var tail=window.__tail||"", ta=[];
+  for(var i=0;i<tail.length;i++){ ta.push(tail.charCodeAt(i)&0xff); }
+  var bytes=new Uint8Array(HDR_SJIS.length+ta.length);
+  bytes.set(HDR_SJIS,0); bytes.set(ta,HDR_SJIS.length);
+  var b=new Blob([bytes],{type:"application/octet-stream"});
+  var u=URL.createObjectURL(b),el=document.createElement("a");
+  el.href=u; el.download="壁内法寸法.bat"; el.click(); URL.revokeObjectURL(u);
+}
+function cp(){ $("bat").select(); document.execCommand("copy"); }
+["gap","ang","off","round","orient","term","font","fig","cust","comma","tw","th","tsp","tc"].forEach(function(id){
+  $(id).addEventListener("input",gen); $(id).addEventListener("change",gen);
+});
+gen();
+</script>
+</body>
+</html>

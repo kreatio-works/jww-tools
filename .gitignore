@@ -1,0 +1,6 @@
+# 実行時に生成される中間ファイル・ログ（配布物ではない）
+*_log.txt
+jw_diff_base.txt
+jwc_temp.txt
+JWC_TEMP.TXT
+*.csv

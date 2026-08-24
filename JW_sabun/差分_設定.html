@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>図面差分チェッカー 設定</title>
+<style>
+  :root{--bd:#d9d7cf;--mut:#6b6a64;--acc:#0f6e56;--accbg:#e1f5ee}
+  *{box-sizing:border-box}
+  body{font-family:"Segoe UI","Hiragino Sans","Yu Gothic UI",sans-serif;color:#222;margin:0;padding:20px;line-height:1.7;background:#faf9f5}
+  .wrap{max-width:860px;margin:0 auto}
+  h1{font-size:20px;font-weight:600;margin:0 0 4px}
+  .sub{color:var(--mut);font-size:13px;margin:0 0 20px}
+  .grid{display:grid;grid-template-columns:1fr;gap:16px}
+  @media(min-width:640px){.grid{grid-template-columns:300px 1fr}}
+  .card{background:#fff;border:1px solid var(--bd);border-radius:12px;padding:16px 18px}
+  .card h2{font-size:13px;font-weight:600;color:var(--mut);margin:0 0 10px}
+  label{display:block;font-size:13px;color:var(--mut);margin:12px 0 4px}
+  input[type=number],select{width:100%;padding:7px 9px;border:1px solid var(--bd);border-radius:7px;font-size:14px;background:#fff}
+  .row{display:flex;gap:8px}.row>*{flex:1}
+  svg{width:100%;height:auto}
+  .cap{font-size:12px;color:var(--mut);margin:0 0 8px}
+  textarea{width:100%;height:96px;font-family:Consolas,monospace;font-size:12px;border:1px solid var(--bd);border-radius:8px;padding:10px;background:#fbfbf8;resize:vertical}
+  .btns{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+  button{padding:8px 16px;border:1px solid var(--acc);background:var(--acc);color:#fff;border-radius:7px;font-size:13px;cursor:pointer}
+  button.sec{background:#fff;color:var(--acc)}
+  .note{font-size:12px;color:var(--mut);margin-top:10px;padding:10px 12px;background:#fff8ec;border:1px solid #f0e2c0;border-radius:8px}
+  code{background:#eee;padding:1px 5px;border-radius:4px;font-size:12px}
+  .steps{font-size:13px;margin:0;padding-left:18px}
+  .steps li{margin:2px 0}
+  .chk{display:flex;align-items:center;gap:6px;margin-top:12px;font-size:13px;color:#222}
+  .chk input{width:auto}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>図面差分チェッカー 設定</h1>
+  <p class="sub">パラメータを決めて <code>差分_比較.bat</code> を生成します。<code>差分_旧図保存.bat</code>・<code>差分_比較.bat</code>・<code>jw_diff.ps1</code> の3つを<b>同じフォルダ</b>に入れて使ってください（迷ったら Jw_cad 本体 <code>jw_win.exe</code> のフォルダ）。</p>
+
+  <div class="grid">
+    <div>
+      <div class="card" style="margin-bottom:14px">
+        <h2>比較条件</h2>
+        <label>座標一致の許容誤差 Tol (mm)</label>
+        <input type="number" id="tol" value="0.5" min="0.01" step="0.1">
+        <div class="chk"><input type="checkbox" id="noshift"><label style="margin:0" for="noshift">図面全体の平行移動を自動補正<b>しない</b></label></div>
+      </div>
+      <div class="card">
+        <h2>マーキング</h2>
+        <label>円マーカー半径 (mm・実寸)</label>
+        <input type="number" id="markr" value="100" min="1" step="10">
+        <div class="row">
+          <div><label>削除の線色</label><select id="cdel"></select></div>
+          <div><label>追加の線色</label><select id="cadd"></select></div>
+        </div>
+        <label>作図先レイヤグループ</label>
+        <select id="layer"><option value="">現在のまま</option></select>
+        <label>作図マーカー上限（超過分はログのみ）</label>
+        <input type="number" id="maxmark" value="500" min="1" step="100">
+        <div class="chk"><input type="checkbox" id="noredraw"><label style="margin:0" for="noredraw">削除要素の元の形を再作図しない（○印だけ）</label></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card" style="margin-bottom:14px">
+        <p class="cap" id="cap"></p>
+        <svg id="pv" viewBox="0 0 560 250"></svg>
+      </div>
+      <div class="card" style="margin-bottom:14px">
+        <h2>生成された 差分_比較.bat</h2>
+        <textarea id="bat" readonly></textarea>
+        <div class="btns">
+          <button onclick="dl('cmp')">差分_比較.bat をダウンロード</button>
+          <button class="sec" onclick="dl('save')">差分_旧図保存.bat をダウンロード</button>
+          <button class="sec" onclick="cp()">コピー</button>
+        </div>
+        <div class="note">ダウンロードされる bat は Shift‑JIS（Jw_cad 対応の文字コード）で書き出されるので、そのまま Jw_cad で使えます。旧図保存の bat に設定項目はありません（同じものを使い回せます）。</div>
+      </div>
+      <div class="card">
+        <h2>使い方</h2>
+        <ol class="steps">
+          <li>改訂前の図面を開く → 外部変形 → <code>差分_旧図保存.bat</code> → 全選択 → 確定（「旧図を保存しました」と出る）</li>
+          <li>改訂後の図面を開く → 外部変形 → <code>差分_比較.bat</code> → 全選択 → 確定</li>
+          <li>削除＝<span id="capdel">線色4</span>で元の形＋○ ／ 追加＝<span id="capadd">線色5</span>で○ が描かれる。一覧は <code>jw_diff_log.txt</code></li>
+        </ol>
+        <div class="note"><b>マーカーが描かれるのは改訂後（新図面）の方だけ</b>です。旧図保存では図面に何も描かれません。マーカーはレイヤグループにまとまって入るので、確認後はそのグループを非表示にするか消せば元の新図に戻ります。<br>移動した要素は「削除＋追加」の2件で出ます。線色・線種・レイヤだけの変更は検出しません（形と文字だけを比較）。</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// bat の REM ヘッダ部（Shift-JIS バイト列）。文字化けを防ぐためブラウザで文字コード変換せず固定バイトで書き出す
+var HDR_CMP_SJIS=[82,69,77,32,144,125,150,202,141,183,149,170,131,96,131,70,131,98,131,74,129,91,32,148,228,138,114,32,118,49,13,10,82,69,77,32,35,106,119,119,13,10,82,69,77,32,35,103,49,13,10,82,69,77,32,35,104,49,13,10,82,69,77,32,35,104,99,141,183,149,170,145,206,143,219,130,240,145,83,145,73,145,240,130,181,130,196,130,173,130,190,130,179,130,162,129,105,144,86,144,125,150,202,130,240,139,140,144,125,130,198,148,228,138,114,130,181,130,196,131,125,129,91,131,76,131,147,131,79,129,106,13,10,82,69,77,32,35,101,13,10,64,101,99,104,111,32,111,102,102,13,10];
+var HDR_CMP_TEXT="REM 図面差分チェッカー 比較 v1\r\nREM #jww\r\nREM #g1\r\nREM #h1\r\nREM #hc差分対象を全選択してください（新図面を旧図と比較してマーキング）\r\nREM #e\r\n@echo off\r\n";
+var HDR_SAVE_SJIS=[82,69,77,32,144,125,150,202,141,183,149,170,131,96,131,70,131,98,131,74,129,91,32,139,140,144,125,149,219,145,182,32,118,49,13,10,82,69,77,32,35,106,119,119,13,10,82,69,77,32,35,103,49,13,10,82,69,77,32,35,104,49,13,10,82,69,77,32,35,104,99,141,183,149,170,145,206,143,219,130,240,145,83,145,73,145,240,130,181,130,196,130,173,130,190,130,179,130,162,129,105,139,140,144,125,150,202,130,240,131,88,131,105,131,98,131,118,131,86,131,135,131,98,131,103,149,219,145,182,129,106,13,10,82,69,77,32,35,101,13,10,64,101,99,104,111,32,111,102,102,13,10];
+var TAIL_SAVE='powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0jw_diff.ps1" -Mode save -TempFile "jwc_temp.txt" -BaseFile "jw_diff_base.txt"\r\n';
+
+// Jw_cad 既定の線色（プレビュー用の目安。実際の色は Jw の環境設定に依存）
+var JWCOL={1:"#00b0c0",2:"#222222",3:"#00a000",4:"#c8a000",5:"#c000c0",6:"#0000e0",7:"#008060",8:"#e00000",9:"#800080"};
+var JWNAME={1:"水色",2:"黒",3:"緑",4:"黄",5:"紫",6:"青",7:"深緑",8:"赤",9:"紫(9)"};
+var $=function(id){return document.getElementById(id)};
+(function init(){
+  for(var i=1;i<=9;i++){
+    ["cdel","cadd"].forEach(function(id){ var o=document.createElement("option"); o.value=i; o.textContent="線色"+i+"（"+JWNAME[i]+"）"; $(id).appendChild(o); });
+  }
+  $("cdel").value=4; $("cadd").value=5;
+  "0123456789ABCDEF".split("").forEach(function(c){ var o=document.createElement("option"); o.value=c; o.textContent="グループ "+c; $("layer").appendChild(o); });
+  $("layer").value="F";
+})();
+function gen(){
+  var tol=$("tol").value, r=$("markr").value, cd=$("cdel").value, ca=$("cadd").value,
+      ly=$("layer").value, mm=$("maxmark").value, nr=$("noredraw").checked, ns=$("noshift").checked;
+  var tail='powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0jw_diff.ps1" -Mode compare -TempFile "jwc_temp.txt" -BaseFile "jw_diff_base.txt"'+
+    " -Tol "+tol+" -MarkR "+r+" -ColorDel "+cd+" -ColorAdd "+ca+' -Layer "'+ly+'"'+" -MaxMark "+mm+(nr?" -NoRedraw":"")+(ns?" -NoShift":"")+"\r\n";
+  window.__tail=tail;
+  $("bat").value=HDR_CMP_TEXT+tail;
+  $("cap").textContent="許容誤差 "+tol+"mm で照合 → 差分を"+(ly?("レイヤグループ "+ly):"現在のグループ")+"に半径"+r+"mmの○でマーキング";
+  $("capdel").textContent="線色"+cd; $("capadd").textContent="線色"+ca;
+  draw();
+}
+function draw(){
+  var cd=JWCOL[$("cdel").value], ca=JWCOL[$("cadd").value], nr=$("noredraw").checked;
+  var rr=Math.max(6,Math.min(40,(+$("markr").value)*0.12));
+  var g="#9a988f";
+  var s='';
+  // 部屋の輪郭(共通)
+  s+='<rect x="90" y="50" width="380" height="150" fill="none" stroke="'+g+'" stroke-width="1.5"/>';
+  s+='<line x1="280" y1="50" x2="280" y2="200" stroke="'+g+'" stroke-width="1.5"/>';
+  // 削除: 旧の線(消えた間仕切)を再作図 + ○
+  if(!nr){ s+='<line x1="90" y1="125" x2="280" y2="125" stroke="'+cd+'" stroke-width="2"/>'; }
+  s+='<circle cx="185" cy="125" r="'+rr+'" fill="none" stroke="'+cd+'" stroke-width="2"/>';
+  s+='<text x="185" y="'+(125+rr+14)+'" text-anchor="middle" font-size="12" fill="'+cd+'">削除（旧図にだけ）</text>';
+  // 追加: 新図に増えた線は既に図面にある(灰)。○だけ
+  s+='<line x1="375" y1="50" x2="375" y2="200" stroke="'+g+'" stroke-width="1.5"/>';
+  s+='<circle cx="375" cy="125" r="'+rr+'" fill="none" stroke="'+ca+'" stroke-width="2"/>';
+  s+='<text x="375" y="'+(125+rr+14)+'" text-anchor="middle" font-size="12" fill="'+ca+'">追加（新図にだけ）</text>';
+  s+='<text x="280" y="232" text-anchor="middle" font-size="12" fill="#6b6a64">灰=新図面の線 ／ 色付き=差分マーカー（色は Jw の環境設定により異なります）</text>';
+  $("pv").innerHTML=s;
+}
+function dl(which){
+  var hdr = which==="save"?HDR_SAVE_SJIS:HDR_CMP_SJIS;
+  var tail = which==="save"?TAIL_SAVE:(window.__tail||"");
+  var name = which==="save"?"差分_旧図保存.bat":"差分_比較.bat";
+  var ta=[]; for(var i=0;i<tail.length;i++){ ta.push(tail.charCodeAt(i)&0xff); }
+  var bytes=new Uint8Array(hdr.length+ta.length);
+  bytes.set(hdr,0); bytes.set(ta,hdr.length);
+  var b=new Blob([bytes],{type:"application/octet-stream"});
+  var u=URL.createObjectURL(b),el=document.createElement("a");
+  el.href=u; el.download=name; el.click(); URL.revokeObjectURL(u);
+}
+function cp(){ $("bat").select(); document.execCommand("copy"); }
+["tol","markr","cdel","cadd","layer","maxmark","noredraw","noshift"].forEach(function(id){
+  $(id).addEventListener("input",gen); $(id).addEventListener("change",gen);
+});
+gen();
+</script>
+</body>
+</html>
