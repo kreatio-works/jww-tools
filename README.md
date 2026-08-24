@@ -46,3 +46,7 @@ MIT ライセンスです。無料で自由に使用・改変・再配布でき�
 ## 不具合報告・要望
 
 GitHub の [Issues](../../issues) からどうぞ。
+
+## 作者
+
+**kreatio-works** — その他のツールは https://kreatio-works.github.io/ で紹介しています。

@@ -1,4 +1,5 @@
-﻿<#
+﻿# kreatio-works  https://kreatio-works.github.io/
+<#
   arrow_to_line.ps1  -- 塗り矢印(三角ソリッド) → 線矢印(2本線) 変換 外部変形
   役割:
     範囲選択されたデータのうち「3点ソリッド(sl x1 y1 x2 y2 x3 y3)」で矢印らしい

@@ -1,4 +1,5 @@
-﻿<#
+﻿# kreatio-works  https://kreatio-works.github.io/
+<#
   jw_diff.ps1  -- Jw_cad 図面差分チェッカー 外部変形エンジン (v1)
   役割:
     -Mode save    : 旧図面の選択図形を正規化前の生値で jw_diff_base.txt に保存する

@@ -1,4 +1,5 @@
-﻿<#
+﻿# kreatio-works  https://kreatio-works.github.io/
+<#
   wall_clearance.ps1  -- 壁-壁 内法寸法 外部変形エンジン
   役割:
     Jw_cad が書き出した jwc_temp.txt から、選択された線分を読み取り、
