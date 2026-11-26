@@ -1,17 +1,19 @@
-# jww-tools — Jw_cad 外部変形ツール集
+# jww-tools — Jw_cad ツール集
 
-Jw_cad の「外部変形」で使える無料ツール集です。
+Jw_cad で使える無料ツール集です（外部変形ツールと、図面の一括PDF化）。
 すべて **Windows 標準の PowerShell だけで動作**します。追加のソフトやランタイムのインストールは不要です。
 
 | ツール | フォルダ | できること |
 |---|---|---|
 | 図面差分チェッカー | [JW_sabun](JW_sabun/) | 改訂前後の図面を比較し、追加・削除された箇所を色分けマーキング＋一覧出力 |
 | 壁内法寸法 | [JW_kabeuchisunpou](JW_kabeuchisunpou/) | 向かい合う壁面線から内法（うちのり）寸法を自動作図。塗り矢印→線矢印の変換ツール付き |
+| JWW一括PDF化 | [JW_pdf](JW_pdf/) | 選んだ複数の図面を、図面ごとに1つの PDF にまとめて変換（Jw_cad＋CubePDF で印刷、用紙サイズ自動） |
 
 ## 動作環境
 
 - Windows 10 / 11（PowerShell 5.1 標準搭載のため追加インストール不要）
 - Jw_cad（外部変形が使えるバージョン。Version 8 系で動作確認）
+- JWW一括PDF化のみ、無料の PDF 作成ソフト [CubePDF](https://www.cube-soft.jp/cubepdf/) が必要です
 
 ## 導入方法
 
@@ -20,6 +22,7 @@ Jw_cad の「外部変形」で使える無料ツール集です。
    - **bat と ps1 は必ず同じフォルダに置いてください**（フォルダごとコピーすればOK）
    - 迷ったら Jw_cad 本体（`jw_win.exe`）のあるフォルダが確実です
 3. Jw_cad で「その他 → 外部変形」→ bat ファイルを選択 → 画面の指示に従って範囲選択
+   - JWW一括PDF化は外部変形ではありません。JWW一括PDF化.bat をダブルクリックするか、図面をその上にドロップします
 
 実行ポリシーの変更などの設定は不要です（bat 内で対応済み）。
 
@@ -29,6 +32,7 @@ Jw_cad の「外部変形」で使える無料ツール集です。
 
 - [図面差分チェッカーの使い方](JW_sabun/README.md)
 - [壁内法寸法の使い方](JW_kabeuchisunpou/README.md)
+- [JWW一括PDF化の使い方](JW_pdf/README.md)
 
 ## よくある質問
 
